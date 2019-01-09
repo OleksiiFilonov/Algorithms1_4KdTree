@@ -7,33 +7,125 @@ import edu.princeton.cs.algs4.SET;
 
 public class KdTree {
 
-    private SET<Point2D> set;
+    private Node root;
+
+    private static class Node {
+        private final Point2D point; // the point
+        // the axis-aligned rectangle corresponding to this node
+        private RectHV rect;
+        private Node lb; // the left/bottom subtree
+        private Node rt; // the right/top subtree
+        private int size; // number of nodes in subtree including this
+
+        private Node(Point2D p) {
+            point = p;
+            size = 1;
+        }
+    }
 
     // construct an empty set of points
     public KdTree() {
-        set = new SET<>();
     }
 
     // is the set empty?
     public boolean isEmpty() {
-        return set.isEmpty();
+        return size() == 0;
     }
 
     // number of points in the set
     public int size() {
-        return set.size();
+        if (root == null) {
+            return 0;
+        } else {
+            return root.size;
+        }
     }
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
         checkForNull(p, "Inserted point can't be null");
-        set.add(p);
+        if (root == null) {
+            root = new Node(p);
+        } else {
+            if (p.x() < root.point.x()) {
+                // go left
+                Node leftNode = new Node(p);
+                root.lb = leftNode;
+                root.size++;
+            } else {
+                // go right
+                Node rightNode = new Node(p);
+                root.rt = rightNode;
+                root.size++;
+            }
+        }
+    }
+
+    /**
+     *
+     * @param p
+     * @param rootNode
+     * @param rootLevel
+     *            - <code>true<code> for X coordinate, <code>false</code> for Y
+     *            coordinate
+     * @return
+     */
+    private Node insertPoint(Point2D p, Node rootNode, boolean rootLevel) {
+        if (rootNode == null) {
+            Node newNode = new Node(p);
+            return newNode;
+        }
+        if (rootNode.point.equals(p)) {
+            return rootNode;
+        } else {
+            if (rootLevel) {
+                // compare X
+                if (rootNode.point.x() < p.x()) {
+                    // go left X
+                    if (rootNode.lb == null) {
+                        Node newNode = new Node(p);
+                        return newNode;
+                    } else {
+                        Node newNode = insertPoint(p, rootNode.lb, !rootLevel);
+
+                    }
+                } else {
+                    // go right X
+                    if (rootNode.rt == null) {
+                        Node newNode = new Node(p);
+                        return newNode;
+                    } else {
+                        insertPoint(p, rootNode.rt, !rootLevel);
+                    }
+                }
+            } else {
+                // compare Y
+                if (rootNode.point.x() < p.x()) {
+                    // go left X
+                    if (rootNode.lb == null) {
+                        Node newNode = new Node(p);
+                        return newNode;
+                    } else {
+                        insertPoint(p, rootNode.lb, !rootLevel);
+                    }
+                } else {
+                    // go right X
+                    if (rootNode.rt == null) {
+                        Node newNode = new Node(p);
+                        return newNode;
+                    } else {
+                        insertPoint(p, rootNode.rt, !rootLevel);
+                    }
+                }
+            }
+        }
+
     }
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
         checkForNull(p, "Contains point can't be null");
-        return set.contains(p);
+        return p.compareTo(root.point) == 0;
     }
 
     private void checkForNull(Object p, String message) {
